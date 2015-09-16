@@ -89,6 +89,10 @@ class ChoicesModel(models.Model):
     choices_field_with_nonstandard_args = models.DecimalField(max_digits=3, decimal_places=1, choices=DECIMAL_CHOICES, verbose_name='A label')
 
 
+class IntegerModel(models.Model):
+    integer_field = models.IntegerField()
+
+
 class TestModelSerializer(TestCase):
     def test_create_method(self):
         class TestSerializer(serializers.ModelSerializer):
@@ -842,3 +846,16 @@ class Issue2704TestCase(TestCase):
         }]
 
         assert serializer.data == expected
+
+
+class TestIntegerOverflow(TestCase):
+    def test_overflow(self):
+        class TestSerializer(serializers.ModelSerializer):
+            class Meta:
+                model = IntegerModel
+                fields = ('integer_field',)
+
+        serializer = TestSerializer(data={'integer_field': 2 ** 64})
+        serializer.is_valid()
+
+        serializer.save()
